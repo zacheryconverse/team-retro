@@ -1,0 +1,1386 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Team Retro</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f4efe6;
+        --panel: rgba(255, 250, 244, 0.92);
+        --panel-strong: #fffdf8;
+        --ink: #1f1d1a;
+        --muted: #6c655d;
+        --border: rgba(63, 47, 30, 0.12);
+        --shadow: 0 18px 40px rgba(78, 55, 28, 0.12);
+        --green: #4d8b31;
+        --amber: #d78324;
+        --blue: #2962c6;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 28%),
+          radial-gradient(circle at top right, rgba(255, 214, 165, 0.42), transparent 28%),
+          linear-gradient(160deg, #f7f0e5 0%, #f3e2c8 45%, #e8dbc4 100%);
+      }
+
+      .shell {
+        width: min(1440px, calc(100vw - 32px));
+        margin: 0 auto;
+        padding: 32px 0 48px;
+      }
+
+      .hero {
+        display: grid;
+        gap: 20px;
+        padding: 28px;
+        border: 1px solid var(--border);
+        border-radius: 28px;
+        background: rgba(255, 251, 246, 0.78);
+        backdrop-filter: blur(14px);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .hero-title-block {
+        display: grid;
+        gap: 10px;
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #6f4f19;
+        background: rgba(255, 227, 170, 0.72);
+      }
+
+      .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        width: fit-content;
+        padding: 8px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        background: rgba(255, 255, 255, 0.7);
+        border: 1px solid var(--border);
+      }
+
+      .status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: var(--amber);
+      }
+
+      .status-pill.connected .status-dot {
+        background: var(--green);
+      }
+
+      .title-input {
+        width: min(720px, 100%);
+        padding: 0;
+        border: 0;
+        outline: none;
+        font: inherit;
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        color: var(--ink);
+        background: transparent;
+      }
+
+      .subtitle {
+        margin: 0;
+        max-width: 920px;
+        color: var(--muted);
+        font-size: 15px;
+        line-height: 1.55;
+      }
+
+      .toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .timer-panel {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .timer-copy {
+        display: grid;
+        gap: 6px;
+      }
+
+      .timer-kicker {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .timer-readout {
+        font-size: clamp(32px, 5vw, 52px);
+        font-weight: 800;
+        letter-spacing: -0.05em;
+        line-height: 1;
+      }
+
+      .timer-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-end;
+        gap: 12px;
+      }
+
+      .timer-field {
+        display: grid;
+        gap: 6px;
+      }
+
+      .timer-label {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .timer-input {
+        width: 110px;
+        padding: 12px 14px;
+        border: 1px solid rgba(63, 47, 30, 0.12);
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--ink);
+        font: inherit;
+        outline: none;
+      }
+
+      .button {
+        border: 0;
+        border-radius: 14px;
+        padding: 12px 16px;
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button.primary {
+        color: white;
+        background: linear-gradient(135deg, #c96b2c, #9a432d);
+        box-shadow: 0 12px 24px rgba(154, 67, 45, 0.28);
+      }
+
+      .button.secondary {
+        color: var(--ink);
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--border);
+      }
+
+      .button.ghost {
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.45);
+        border: 1px solid rgba(63, 47, 30, 0.08);
+      }
+
+      .composer {
+        display: grid;
+        grid-template-columns: minmax(260px, 1.6fr) minmax(240px, 1fr) minmax(180px, 0.6fr) auto;
+        gap: 12px;
+        align-items: stretch;
+      }
+
+      .composer textarea,
+      .composer input,
+      .composer select {
+        width: 100%;
+        padding: 14px 16px;
+        border: 1px solid rgba(63, 47, 30, 0.12);
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.88);
+        color: var(--ink);
+        font: inherit;
+        outline: none;
+      }
+
+      .composer textarea {
+        min-height: 72px;
+        resize: vertical;
+      }
+
+      .composer textarea:focus,
+      .composer input:focus,
+      .composer select:focus,
+      .title-input:focus {
+        box-shadow: 0 0 0 3px rgba(201, 107, 44, 0.18);
+      }
+
+      .helper-card {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        background: rgba(255, 255, 255, 0.62);
+      }
+
+      .helper-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 800;
+      }
+
+      .helper-copy {
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .helper-header {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .helper-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .giphy-browser {
+        width: 100%;
+        height: 420px;
+        border: 0;
+        border-radius: 18px;
+        background: white;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(260px, 1fr));
+        gap: 18px;
+        margin-top: 24px;
+      }
+
+      .column {
+        display: flex;
+        flex-direction: column;
+        min-height: 480px;
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        background: rgba(255, 251, 246, 0.84);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .column-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 20px 18px 18px;
+      }
+
+      .column-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .column-dot {
+        width: 14px;
+        height: 14px;
+        border-radius: 999px;
+        box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.52);
+      }
+
+      .count {
+        padding: 6px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--muted);
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid var(--border);
+      }
+
+      .cards {
+        display: grid;
+        gap: 12px;
+        padding: 0 18px 18px;
+        height: 100%;
+        align-content: start;
+      }
+
+      .cards.drag-over {
+        background: rgba(201, 107, 44, 0.06);
+      }
+
+      .empty {
+        padding: 18px;
+        border: 1px dashed rgba(63, 47, 30, 0.16);
+        border-radius: 18px;
+        color: var(--muted);
+        text-align: center;
+        background: rgba(255, 255, 255, 0.36);
+      }
+
+      .card {
+        display: grid;
+        gap: 12px;
+        padding: 16px;
+        border-radius: 18px;
+        background: var(--panel-strong);
+        border: 1px solid rgba(63, 47, 30, 0.08);
+        box-shadow: 0 12px 22px rgba(92, 63, 31, 0.08);
+        cursor: grab;
+      }
+
+      .card.dragging {
+        opacity: 0.45;
+      }
+
+      .card.optimistic {
+        opacity: 0.78;
+        border-style: dashed;
+      }
+
+      .card-meta,
+      .card-actions {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .card-time {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+      }
+
+      .card-text {
+        margin: 0;
+        font-size: 15px;
+        line-height: 1.5;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      .card-media {
+        display: grid;
+        gap: 8px;
+      }
+
+      .card-media-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .card-media-frame {
+        width: 100%;
+        aspect-ratio: 16 / 10;
+        border: 0;
+        border-radius: 16px;
+        background: #f1e4d2;
+      }
+
+      .card-media-image {
+        width: 100%;
+        display: block;
+        border-radius: 16px;
+        background: #f1e4d2;
+      }
+
+      .card-media-link {
+        color: #8e5420;
+        font-size: 12px;
+        font-weight: 700;
+        text-decoration: none;
+      }
+
+      .mini-actions {
+        display: flex;
+        gap: 8px;
+      }
+
+      .mini-button {
+        border: 0;
+        border-radius: 12px;
+        padding: 8px 10px;
+        font: inherit;
+        cursor: pointer;
+        color: var(--muted);
+        background: rgba(247, 239, 230, 0.92);
+      }
+
+      .mini-button.vote {
+        font-weight: 800;
+        color: #7a4d17;
+      }
+
+      @media (max-width: 980px) {
+        .composer,
+        .board {
+          grid-template-columns: 1fr;
+        }
+
+        .column {
+          min-height: 320px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="hero-top">
+          <div class="hero-title-block">
+            <div class="badge">Tiny Team Tool</div>
+            <div class="status-pill" id="statusPill">
+              <span class="status-dot"></span>
+              <span id="statusText">Connecting...</span>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="button secondary" id="copyLinkButton" type="button">Copy Link</button>
+            <button class="button secondary" id="exportButton" type="button">Export Markdown</button>
+            <button class="button ghost" id="clearButton" type="button">Reset Board</button>
+          </div>
+        </div>
+
+        <div>
+          <input class="title-input" id="boardTitle" type="text" value="Team Retro" />
+        </div>
+
+        <section class="timer-panel" aria-label="Shared meeting timer">
+          <div class="timer-copy">
+            <span class="timer-kicker">Meeting Timer</span>
+            <div class="timer-readout" id="timerReadout">15:00</div>
+          </div>
+          <form class="timer-controls" id="timerForm">
+            <label class="timer-field" for="timerMinutes">
+              <span class="timer-label">Minutes</span>
+              <input class="timer-input" id="timerMinutes" name="timerMinutes" type="number" min="1" max="240" step="1" value="15" />
+            </label>
+            <button class="button secondary" id="timerSetButton" type="submit">Set</button>
+            <button class="button primary" id="timerToggleButton" type="button">Start</button>
+            <button class="button ghost" id="timerResetButton" type="button">Reset</button>
+          </form>
+        </section>
+
+        <form class="composer" id="cardForm">
+          <textarea
+            id="cardText"
+            name="cardText"
+            placeholder="Drop a note here... what went well, what hurt, what should we do next?"
+            required
+          ></textarea>
+          <input
+            id="giphyUrl"
+            name="giphyUrl"
+            type="url"
+            placeholder="Optional Giphy or GIF URL"
+            inputmode="url"
+          />
+          <select id="columnSelect" name="columnSelect" aria-label="Select retro column"></select>
+          <button class="button primary" type="submit">Add Card</button>
+        </form>
+
+        <section class="helper-card">
+          <div class="helper-header">
+            <h2 class="helper-title">Browse Giphy</h2>
+            <div class="helper-actions">
+              <button class="button secondary" id="toggleGiphyBrowserButton" type="button">Show Giphy</button>
+            </div>
+          </div>
+          <p class="helper-copy">
+            Search inside the frame, then copy a GIF page URL from Giphy and paste it into the Giphy URL field above.
+          </p>
+          <div id="giphyBrowserPanel" class="hidden">
+            <iframe
+              id="giphyBrowser"
+              class="giphy-browser"
+              data-src="https://giphy.com/search/reaction"
+              title="Giphy search browser"
+              loading="lazy"
+              allow="clipboard-read; clipboard-write"
+            ></iframe>
+          </div>
+        </section>
+      </section>
+
+      <section class="board" id="board"></section>
+    </main>
+
+    <script>
+      const defaultState = {
+        title: "Team Retro",
+        columns: [
+          { id: "went-well", title: "Went Well", color: "#4d8b31" },
+          { id: "needs-work", title: "Needs Work", color: "#d78324" },
+          { id: "action-items", title: "Action Items", color: "#2962c6" },
+        ],
+        cards: [],
+        timer: {
+          durationMs: 15 * 60 * 1000,
+          remainingMs: 15 * 60 * 1000,
+          endAt: null,
+        },
+      };
+
+      const boardEl = document.getElementById("board");
+      const titleEl = document.getElementById("boardTitle");
+      const formEl = document.getElementById("cardForm");
+      const textEl = document.getElementById("cardText");
+      const giphyUrlEl = document.getElementById("giphyUrl");
+      const columnSelectEl = document.getElementById("columnSelect");
+      const exportButtonEl = document.getElementById("exportButton");
+      const clearButtonEl = document.getElementById("clearButton");
+      const copyLinkButtonEl = document.getElementById("copyLinkButton");
+      const statusPillEl = document.getElementById("statusPill");
+      const statusTextEl = document.getElementById("statusText");
+      const timerFormEl = document.getElementById("timerForm");
+      const timerReadoutEl = document.getElementById("timerReadout");
+      const timerMinutesEl = document.getElementById("timerMinutes");
+      const timerToggleButtonEl = document.getElementById("timerToggleButton");
+      const timerResetButtonEl = document.getElementById("timerResetButton");
+      const giphyBrowserEl = document.getElementById("giphyBrowser");
+      const giphyBrowserPanelEl = document.getElementById("giphyBrowserPanel");
+      const toggleGiphyBrowserButtonEl = document.getElementById("toggleGiphyBrowserButton");
+
+      let state = structuredClone(defaultState);
+      let eventSource = null;
+      let titleSaveTimer = null;
+      let isGiphyBrowserOpen = false;
+      const expandedMediaCardIds = new Set();
+      const voteOrderHoldByColumn = new Map();
+      const voteOrderHoldTimerByColumn = new Map();
+      const VOTE_ORDER_HOLD_MS = 1000;
+
+      function escapeHtml(value) {
+        return String(value)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function setStatus(connected, label) {
+        statusPillEl.classList.toggle("connected", connected);
+        statusTextEl.textContent = label;
+      }
+
+      function syncGiphyBrowserVisibility() {
+        giphyBrowserPanelEl.classList.toggle("hidden", !isGiphyBrowserOpen);
+        toggleGiphyBrowserButtonEl.textContent = isGiphyBrowserOpen ? "Hide Giphy" : "Show Giphy";
+
+        if (isGiphyBrowserOpen && !giphyBrowserEl.src) {
+          giphyBrowserEl.src = giphyBrowserEl.dataset.src || "https://giphy.com/search/reaction";
+        }
+      }
+
+      async function getPreferredShareUrl() {
+        try {
+          const data = await request("/api/share-url");
+          return data.shareUrl || window.location.href;
+        } catch (error) {
+          return window.location.href;
+        }
+      }
+
+      async function request(pathname, options = {}) {
+        const response = await fetch(pathname, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+          },
+          ...options,
+        });
+
+        if (!response.ok) {
+          let message = "Request failed.";
+          try {
+            const data = await response.json();
+            message = data.error || message;
+          } catch (error) {
+            message = response.statusText || message;
+          }
+          throw new Error(message);
+        }
+
+        if (response.status === 204) {
+          return null;
+        }
+
+        return response.json();
+      }
+
+      function formatTime(isoValue) {
+        return new Date(isoValue).toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      }
+
+      function getTimerSnapshot() {
+        const fallback = defaultState.timer;
+        const input = state.timer && typeof state.timer === "object" ? state.timer : fallback;
+        const durationMs =
+          Number.isFinite(Number(input.durationMs)) && Number(input.durationMs) > 0
+            ? Math.round(Number(input.durationMs))
+            : fallback.durationMs;
+        let remainingMs =
+          Number.isFinite(Number(input.remainingMs)) && Number(input.remainingMs) >= 0
+            ? Math.min(durationMs, Math.round(Number(input.remainingMs)))
+            : durationMs;
+        let endAt = typeof input.endAt === "string" && input.endAt ? input.endAt : null;
+
+        if (endAt) {
+          const endTime = Date.parse(endAt);
+          if (Number.isFinite(endTime)) {
+            remainingMs = Math.max(0, endTime - Date.now());
+            if (remainingMs === 0) {
+              endAt = null;
+            }
+          } else {
+            endAt = null;
+            remainingMs = durationMs;
+          }
+        }
+
+        return {
+          durationMs,
+          remainingMs,
+          endAt,
+        };
+      }
+
+      function formatDuration(ms) {
+        const totalSeconds = Math.max(0, Math.ceil(ms / 1000));
+        const seconds = totalSeconds % 60;
+        const minutes = Math.floor(totalSeconds / 60) % 60;
+        const hours = Math.floor(totalSeconds / 3600);
+
+        if (hours > 0) {
+          return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+        }
+
+        return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+      }
+
+      function renderTimer() {
+        const timer = getTimerSnapshot();
+        const isRunning = Boolean(timer.endAt);
+
+        timerReadoutEl.textContent = formatDuration(timer.remainingMs);
+        timerToggleButtonEl.textContent = isRunning ? "Pause" : "Start";
+
+        if (document.activeElement !== timerMinutesEl) {
+          timerMinutesEl.value = String(Math.max(1, Math.round(timer.durationMs / 60000)));
+        }
+      }
+
+      function getNaturallySortedCardsForColumn(columnId) {
+        return state.cards
+          .filter((card) => card.columnId === columnId)
+          .sort((a, b) => {
+            if ((b.votes || 0) !== (a.votes || 0)) {
+              return (b.votes || 0) - (a.votes || 0);
+            }
+            return new Date(a.createdAt) - new Date(b.createdAt);
+          });
+      }
+
+      function getRenderedCardOrder(columnId) {
+        return Array.from(boardEl.querySelectorAll(`.cards[data-drop-column="${columnId}"] .card`))
+          .map((cardEl) => cardEl.dataset.cardId)
+          .filter(Boolean);
+      }
+
+      function holdColumnVoteOrder(columnId) {
+        if (!voteOrderHoldByColumn.has(columnId)) {
+          const renderedOrder = getRenderedCardOrder(columnId);
+          if (renderedOrder.length) {
+            voteOrderHoldByColumn.set(columnId, renderedOrder);
+          }
+        }
+
+        clearTimeout(voteOrderHoldTimerByColumn.get(columnId));
+        voteOrderHoldTimerByColumn.set(
+          columnId,
+          window.setTimeout(() => {
+            voteOrderHoldByColumn.delete(columnId);
+            voteOrderHoldTimerByColumn.delete(columnId);
+            renderBoard();
+          }, VOTE_ORDER_HOLD_MS),
+        );
+      }
+
+      function getCardsForColumn(columnId) {
+        const sortedCards = getNaturallySortedCardsForColumn(columnId);
+        const heldOrder = voteOrderHoldByColumn.get(columnId);
+
+        if (!heldOrder?.length) {
+          return sortedCards;
+        }
+
+        const cardsById = new Map(sortedCards.map((card) => [card.id, card]));
+        const heldCards = heldOrder.map((cardId) => cardsById.get(cardId)).filter(Boolean);
+        const heldCardIds = new Set(heldCards.map((card) => card.id));
+        const remainingCards = sortedCards.filter((card) => !heldCardIds.has(card.id));
+        return [...heldCards, ...remainingCards];
+      }
+
+      function normalizeMediaUrl(rawValue) {
+        const value = rawValue.trim();
+        if (!value) return null;
+
+        try {
+          const url = new URL(value);
+          const host = url.hostname.toLowerCase();
+          const pathParts = url.pathname.split("/").filter(Boolean);
+
+          if (/\.(gif|webp|png|jpe?g)$/i.test(url.pathname)) {
+            return {
+              kind: "image",
+              sourceUrl: value,
+              embedUrl: value,
+            };
+          }
+
+          if (host.includes("giphy.com")) {
+            let giphyId = "";
+
+            if (pathParts[0] === "embed" && pathParts[1]) {
+              giphyId = pathParts[1];
+            } else if (pathParts[0] === "media" && pathParts[1]) {
+              giphyId = pathParts[1];
+            } else if (pathParts.length) {
+              giphyId = pathParts[pathParts.length - 1].split("-").pop();
+            }
+
+            if (giphyId) {
+              return {
+                kind: "giphy",
+                sourceUrl: value,
+                embedUrl: `https://giphy.com/embed/${giphyId}`,
+              };
+            }
+          }
+        } catch (error) {
+          console.warn("Ignoring invalid media URL.", error);
+        }
+
+        return null;
+      }
+
+      function renderCardMedia(card) {
+        if (!card.media || !card.media.embedUrl) {
+          return "";
+        }
+
+        const isExpanded = expandedMediaCardIds.has(card.id);
+        const toggleLabel = isExpanded ? "Hide GIF" : "Show GIF";
+        const openLabel = card.media.kind === "giphy" ? "Open on Giphy" : "Open image";
+
+        if (card.media.kind === "giphy") {
+          return `
+            <div class="card-media">
+              <div class="card-media-toolbar">
+                <button class="mini-button" type="button" data-action="toggle-media" data-card-id="${card.id}">
+                  ${toggleLabel}
+                </button>
+                <a class="card-media-link" href="${escapeHtml(card.media.sourceUrl)}" target="_blank" rel="noreferrer">
+                  ${openLabel}
+                </a>
+              </div>
+              ${
+                isExpanded
+                  ? `
+                <iframe
+                  class="card-media-frame"
+                  src="${escapeHtml(card.media.embedUrl)}"
+                  title="Giphy preview"
+                  loading="lazy"
+                  allowfullscreen
+                ></iframe>
+              `
+                  : ""
+              }
+            </div>
+          `;
+        }
+
+        return `
+          <div class="card-media">
+            <div class="card-media-toolbar">
+              <button class="mini-button" type="button" data-action="toggle-media" data-card-id="${card.id}">
+                ${toggleLabel}
+              </button>
+              <a class="card-media-link" href="${escapeHtml(card.media.sourceUrl)}" target="_blank" rel="noreferrer">
+                ${openLabel}
+              </a>
+            </div>
+            ${
+              isExpanded
+                ? `
+              <img
+                class="card-media-image"
+                src="${escapeHtml(card.media.embedUrl)}"
+                alt="Attached GIF"
+                loading="lazy"
+              />
+            `
+                : ""
+            }
+          </div>
+        `;
+      }
+
+      function renderColumnSelect() {
+        const currentValue = columnSelectEl.value || state.columns[0]?.id || "";
+        columnSelectEl.innerHTML = state.columns
+          .map((column) => `<option value="${column.id}">${escapeHtml(column.title)}</option>`)
+          .join("");
+        columnSelectEl.value = state.columns.some((column) => column.id === currentValue)
+          ? currentValue
+          : state.columns[0]?.id || "";
+      }
+
+      function attachDragHandlers() {
+        document.querySelectorAll(".card").forEach((cardEl) => {
+          cardEl.addEventListener("dragstart", (event) => {
+            event.dataTransfer.setData("text/plain", cardEl.dataset.cardId);
+            cardEl.classList.add("dragging");
+          });
+
+          cardEl.addEventListener("dragend", () => {
+            cardEl.classList.remove("dragging");
+            document.querySelectorAll(".cards").forEach((cardsEl) => cardsEl.classList.remove("drag-over"));
+          });
+        });
+
+        document.querySelectorAll(".cards").forEach((cardsEl) => {
+          cardsEl.addEventListener("dragover", (event) => {
+            event.preventDefault();
+            cardsEl.classList.add("drag-over");
+          });
+
+          cardsEl.addEventListener("dragleave", () => {
+            cardsEl.classList.remove("drag-over");
+          });
+
+          cardsEl.addEventListener("drop", async (event) => {
+            event.preventDefault();
+            cardsEl.classList.remove("drag-over");
+            const cardId = event.dataTransfer.getData("text/plain");
+            const columnId = cardsEl.dataset.dropColumn;
+            if (!cardId || !columnId) {
+              return;
+            }
+
+            try {
+              await runOptimisticMutation(() => {
+                state.cards = state.cards.map((item) => (item.id === cardId ? { ...item, columnId } : item));
+              }, () =>
+                request(`/api/cards/${cardId}`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ columnId }),
+                }),
+              );
+            } catch (error) {
+              window.alert(error.message);
+            }
+          });
+        });
+      }
+
+      function renderBoard() {
+        if (document.activeElement !== titleEl) {
+          titleEl.value = state.title;
+        }
+
+        boardEl.innerHTML = state.columns
+          .map((column) => {
+            const cards = getCardsForColumn(column.id);
+            const cardsMarkup = cards.length
+              ? cards
+                  .map(
+                    (card) => `
+                      <article class="card${card.optimistic ? " optimistic" : ""}" draggable="true" data-card-id="${card.id}">
+                        <div class="card-meta">
+                          <span class="card-time">${formatTime(card.createdAt)}</span>
+                          <div class="mini-actions">
+                            <button class="mini-button" type="button" data-action="edit" data-card-id="${card.id}">Edit</button>
+                            <button class="mini-button" type="button" data-action="delete" data-card-id="${card.id}">Delete</button>
+                          </div>
+                        </div>
+                        <p class="card-text">${escapeHtml(card.text)}</p>
+                        ${renderCardMedia(card)}
+                        <div class="card-actions">
+                          <button class="mini-button vote" type="button" data-action="vote" data-card-id="${card.id}">
+                            👍 ${card.votes || 0}
+                          </button>
+                          <button class="mini-button" type="button" data-action="duplicate" data-card-id="${card.id}">
+                            Duplicate
+                          </button>
+                        </div>
+                      </article>
+                    `,
+                  )
+                  .join("")
+              : `<div class="empty">Drop cards here.</div>`;
+
+            return `
+              <section class="column">
+                <header class="column-header">
+                  <div class="column-title">
+                    <span class="column-dot" style="background:${column.color}"></span>
+                    <span>${escapeHtml(column.title)}</span>
+                  </div>
+                  <span class="count">${cards.length}</span>
+                </header>
+                <div class="cards" data-drop-column="${column.id}">
+                  ${cardsMarkup}
+                </div>
+              </section>
+            `;
+          })
+          .join("");
+
+        attachDragHandlers();
+      }
+
+      async function runOptimisticMutation(applyLocalChange, sendRequest) {
+        applyLocalChange();
+        renderBoard();
+        renderTimer();
+
+        try {
+          return await sendRequest();
+        } catch (error) {
+          try {
+            await loadState();
+          } catch (_loadError) {
+            // Keep the original request error for the UI.
+          }
+          throw error;
+        }
+      }
+
+      function downloadMarkdown() {
+        const lines = [`# ${state.title}`, ""];
+
+        state.columns.forEach((column) => {
+          lines.push(`## ${column.title}`);
+          const cards = getNaturallySortedCardsForColumn(column.id);
+
+          if (!cards.length) {
+            lines.push("- _No notes_");
+          } else {
+            cards.forEach((card) => {
+              const votes = card.votes ? ` (+${card.votes})` : "";
+              const mediaLink = card.media?.sourceUrl ? ` [GIF](${card.media.sourceUrl})` : "";
+              lines.push(`- ${card.text.replace(/\n/g, " ")}${votes}${mediaLink}`);
+            });
+          }
+
+          lines.push("");
+        });
+
+        const blob = new Blob([lines.join("\n")], { type: "text/markdown;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `${state.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "retro-board"}.md`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+      }
+
+      async function loadState() {
+        const data = await request("/api/state");
+        state = data.state;
+        renderColumnSelect();
+        renderBoard();
+        renderTimer();
+      }
+
+      function connectEvents() {
+        if (eventSource) {
+          eventSource.close();
+        }
+
+        eventSource = new EventSource("/events");
+
+        eventSource.onopen = () => {
+          setStatus(true, "Live");
+        };
+
+        eventSource.onerror = () => {
+          setStatus(false, "Reconnecting...");
+        };
+
+        eventSource.addEventListener("state", (event) => {
+          const payload = JSON.parse(event.data);
+          state = payload.state;
+          renderColumnSelect();
+          renderBoard();
+          renderTimer();
+          setStatus(true, "Live");
+        });
+
+        eventSource.addEventListener("reload", () => {
+          setStatus(true, "Refreshing UI...");
+          window.location.reload();
+        });
+      }
+
+      formEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = textEl.value.trim();
+        const media = normalizeMediaUrl(giphyUrlEl.value);
+        const columnId = columnSelectEl.value;
+
+        if (!text || !columnId) {
+          return;
+        }
+
+        if (giphyUrlEl.value.trim() && !media) {
+          window.alert("That Giphy/GIF URL did not look valid. Paste a normal Giphy page URL or direct GIF link.");
+          giphyUrlEl.focus();
+          return;
+        }
+
+        const optimisticCard = {
+          id: `temp-${crypto.randomUUID()}`,
+          text,
+          columnId,
+          media,
+          votes: 0,
+          createdAt: new Date().toISOString(),
+          optimistic: true,
+        };
+
+        formEl.reset();
+        columnSelectEl.value = state.columns[0]?.id || "";
+        textEl.focus();
+
+        try {
+          await runOptimisticMutation(() => {
+            state.cards.unshift(optimisticCard);
+          }, () =>
+            request("/api/cards", {
+              method: "POST",
+              body: JSON.stringify({ text, columnId, media }),
+            }),
+          );
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+
+      toggleGiphyBrowserButtonEl.addEventListener("click", () => {
+        isGiphyBrowserOpen = !isGiphyBrowserOpen;
+        syncGiphyBrowserVisibility();
+      });
+
+      timerFormEl.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const minutes = Math.round(Number(timerMinutesEl.value));
+
+        if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 240) {
+          window.alert("Pick a timer length between 1 and 240 minutes.");
+          timerMinutesEl.focus();
+          return;
+        }
+
+        const durationMs = minutes * 60 * 1000;
+
+        try {
+          await runOptimisticMutation(() => {
+            state.timer = {
+              durationMs,
+              remainingMs: durationMs,
+              endAt: null,
+            };
+          }, () =>
+            request("/api/timer", {
+              method: "POST",
+              body: JSON.stringify({ action: "set-duration", minutes }),
+            }),
+          );
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+
+      timerToggleButtonEl.addEventListener("click", async () => {
+        const timer = getTimerSnapshot();
+        const action = timer.endAt ? "pause" : "start";
+
+        try {
+          await runOptimisticMutation(() => {
+            if (action === "pause") {
+              state.timer = {
+                durationMs: timer.durationMs,
+                remainingMs: timer.remainingMs,
+                endAt: null,
+              };
+              return;
+            }
+
+            const remainingMs = timer.remainingMs > 0 ? timer.remainingMs : timer.durationMs;
+            state.timer = {
+              durationMs: timer.durationMs,
+              remainingMs,
+              endAt: new Date(Date.now() + remainingMs).toISOString(),
+            };
+          }, () =>
+            request("/api/timer", {
+              method: "POST",
+              body: JSON.stringify({ action }),
+            }),
+          );
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+
+      timerResetButtonEl.addEventListener("click", async () => {
+        const timer = getTimerSnapshot();
+
+        try {
+          await runOptimisticMutation(() => {
+            state.timer = {
+              durationMs: timer.durationMs,
+              remainingMs: timer.durationMs,
+              endAt: null,
+            };
+          }, () =>
+            request("/api/timer", {
+              method: "POST",
+              body: JSON.stringify({ action: "reset" }),
+            }),
+          );
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+
+      titleEl.addEventListener("input", () => {
+        clearTimeout(titleSaveTimer);
+        titleSaveTimer = setTimeout(async () => {
+          try {
+            await request("/api/title", {
+              method: "POST",
+              body: JSON.stringify({ title: titleEl.value.trim() || "Team Retro" }),
+            });
+          } catch (error) {
+            await loadState().catch(() => {});
+            window.alert(error.message);
+          }
+        }, 250);
+      });
+
+      clearButtonEl.addEventListener("click", async () => {
+        const shouldClear = window.confirm("Reset the whole board for everyone?");
+        if (!shouldClear) {
+          return;
+        }
+
+        try {
+          await runOptimisticMutation(() => {
+            state = structuredClone(defaultState);
+          }, () => request("/api/reset", { method: "POST" }));
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+
+      exportButtonEl.addEventListener("click", downloadMarkdown);
+
+      copyLinkButtonEl.addEventListener("click", async () => {
+        const preferredUrl = await getPreferredShareUrl();
+
+        try {
+          await navigator.clipboard.writeText(preferredUrl);
+          copyLinkButtonEl.textContent = "Copied";
+          setTimeout(() => {
+            copyLinkButtonEl.textContent = "Copy Link";
+          }, 1200);
+        } catch (error) {
+          window.prompt("Copy this link", preferredUrl);
+        }
+      });
+
+      boardEl.addEventListener("click", async (event) => {
+        const button = event.target.closest("button[data-action]");
+        if (!button) {
+          return;
+        }
+
+        const action = button.dataset.action;
+        const cardId = button.dataset.cardId;
+        const card = state.cards.find((item) => item.id === cardId);
+        if (!card) {
+          return;
+        }
+
+        try {
+          if (action === "toggle-media") {
+            if (expandedMediaCardIds.has(cardId)) {
+              expandedMediaCardIds.delete(cardId);
+            } else {
+              expandedMediaCardIds.add(cardId);
+            }
+            renderBoard();
+            return;
+          }
+
+          if (action === "delete") {
+            await runOptimisticMutation(() => {
+              state.cards = state.cards.filter((item) => item.id !== cardId);
+            }, () => request(`/api/cards/${cardId}`, { method: "DELETE" }));
+            return;
+          }
+
+          if (action === "edit") {
+            const nextText = window.prompt("Update card", card.text);
+            if (nextText === null) {
+              return;
+            }
+
+            if (!nextText.trim()) {
+              await runOptimisticMutation(() => {
+                state.cards = state.cards.filter((item) => item.id !== cardId);
+              }, () => request(`/api/cards/${cardId}`, { method: "DELETE" }));
+              return;
+            }
+
+            const nextMediaRaw = window.prompt("Update Giphy/GIF URL", card.media?.sourceUrl || "");
+            if (nextMediaRaw === null) {
+              return;
+            }
+
+            const nextMedia = nextMediaRaw.trim() ? normalizeMediaUrl(nextMediaRaw) : null;
+            if (nextMediaRaw.trim() && !nextMedia) {
+              window.alert("That Giphy/GIF URL did not look valid. Keeping the old card unchanged.");
+              return;
+            }
+
+            await runOptimisticMutation(() => {
+              state.cards = state.cards.map((item) =>
+                item.id === cardId ? { ...item, text: nextText.trim(), media: nextMedia } : item,
+              );
+            }, () =>
+              request(`/api/cards/${cardId}`, {
+                method: "PATCH",
+                body: JSON.stringify({ text: nextText.trim(), media: nextMedia }),
+              }),
+            );
+            return;
+          }
+
+          if (action === "vote") {
+            holdColumnVoteOrder(card.columnId);
+            await runOptimisticMutation(() => {
+              state.cards = state.cards.map((item) =>
+                item.id === cardId ? { ...item, votes: (item.votes || 0) + 1 } : item,
+              );
+            }, () => request(`/api/cards/${cardId}/vote`, { method: "POST" }));
+            return;
+          }
+
+          if (action === "duplicate") {
+            await runOptimisticMutation(() => {
+              state.cards.unshift({
+                ...card,
+                id: `temp-${crypto.randomUUID()}`,
+                createdAt: new Date().toISOString(),
+                optimistic: true,
+              });
+            }, () => request(`/api/cards/${cardId}/duplicate`, { method: "POST" }));
+          }
+        } catch (error) {
+          window.alert(error.message);
+        }
+      });
+
+      syncGiphyBrowserVisibility();
+      window.setInterval(renderTimer, 250);
+      loadState()
+        .then(() => {
+          connectEvents();
+          renderColumnSelect();
+          renderBoard();
+          renderTimer();
+        })
+        .catch((error) => {
+          setStatus(false, "Offline");
+          boardEl.innerHTML = `<div class="empty">${escapeHtml(error.message)}</div>`;
+        });
+    </script>
+  </body>
+</html>

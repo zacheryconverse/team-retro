@@ -1,0 +1,32 @@
+{
+  "name": "team-retro",
+  "version": "0.1.1",
+  "description": "Tiny no-login retro board for short team sessions.",
+  "license": "MIT",
+  "bin": {
+    "team-retro": "bin/team-retro.js"
+  },
+  "files": [
+    "bin",
+    "public",
+    "server.js",
+    "run-retro.sh",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "retro",
+    "retrospective",
+    "team",
+    "board",
+    "whiteboard",
+    "meeting"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node ./bin/team-retro.js",
+    "pack:check": "npm pack --dry-run"
+  }
+}

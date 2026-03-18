@@ -1,0 +1,4 @@
+data/
+*.log
+*.tgz
+.DS_Store

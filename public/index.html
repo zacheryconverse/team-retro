@@ -28,10 +28,7 @@
         min-height: 100vh;
         font-family: "Avenir Next", "Segoe UI", sans-serif;
         color: var(--ink);
-        background:
-          radial-gradient(circle at top left, rgba(255, 255, 255, 0.9), transparent 28%),
-          radial-gradient(circle at top right, rgba(255, 214, 165, 0.42), transparent 28%),
-          linear-gradient(160deg, #f7f0e5 0%, #f3e2c8 45%, #e8dbc4 100%);
+        background: #f1e7d8;
       }
 
       .shell {
@@ -127,7 +124,14 @@
       .toolbar {
         display: flex;
         flex-wrap: wrap;
+        align-items: flex-start;
         gap: 12px;
+      }
+
+      .share-control {
+        display: grid;
+        gap: 6px;
+        max-width: min(100%, 360px);
       }
 
       .timer-panel {
@@ -203,13 +207,42 @@
         transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
       }
 
+      .button.copy-link {
+        display: grid;
+        gap: 4px;
+        justify-items: start;
+        max-width: min(100%, 360px);
+        text-align: left;
+      }
+
+      .button-label {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+      }
+
+      .button-context {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
+      .button-value {
+        max-width: 100%;
+        overflow-wrap: anywhere;
+        font-size: 13px;
+        font-weight: 600;
+        line-height: 1.35;
+      }
+
       .button:hover {
         transform: translateY(-1px);
       }
 
       .button.primary {
         color: white;
-        background: linear-gradient(135deg, #c96b2c, #9a432d);
+        background: #a45633;
         box-shadow: 0 12px 24px rgba(154, 67, 45, 0.28);
       }
 
@@ -277,6 +310,13 @@
         color: var(--muted);
         font-size: 13px;
         line-height: 1.5;
+      }
+
+      .share-helper {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.45;
       }
 
       .helper-header {
@@ -499,7 +539,14 @@
             </div>
           </div>
           <div class="toolbar">
-            <button class="button secondary" id="copyLinkButton" type="button">Copy Link</button>
+            <div class="share-control">
+              <button class="button secondary copy-link" id="copyLinkButton" type="button">
+                <span class="button-label" id="copyLinkLabel">Copy link</span>
+                <span class="button-context" id="copyLinkContext">Share this public URL:</span>
+                <span class="button-value" id="copyLinkValue">Loading…</span>
+              </button>
+              <p class="share-helper" id="shareHelperText">Loading share status…</p>
+            </div>
             <button class="button secondary" id="exportButton" type="button">Export Markdown</button>
             <button class="button ghost" id="clearButton" type="button">Reset Board</button>
           </div>
@@ -594,6 +641,10 @@
       const exportButtonEl = document.getElementById("exportButton");
       const clearButtonEl = document.getElementById("clearButton");
       const copyLinkButtonEl = document.getElementById("copyLinkButton");
+      const copyLinkLabelEl = document.getElementById("copyLinkLabel");
+      const copyLinkContextEl = document.getElementById("copyLinkContext");
+      const copyLinkValueEl = document.getElementById("copyLinkValue");
+      const shareHelperTextEl = document.getElementById("shareHelperText");
       const statusPillEl = document.getElementById("statusPill");
       const statusTextEl = document.getElementById("statusText");
       const timerFormEl = document.getElementById("timerForm");
@@ -608,6 +659,8 @@
       let state = structuredClone(defaultState);
       let eventSource = null;
       let titleSaveTimer = null;
+      let copyLinkResetTimer = null;
+      let copyLinkPollTimer = null;
       let isGiphyBrowserOpen = false;
       const expandedMediaCardIds = new Set();
       const voteOrderHoldByColumn = new Map();
@@ -637,13 +690,83 @@
         }
       }
 
-      async function getPreferredShareUrl() {
+      function isLocalPage() {
+        return ["127.0.0.1", "localhost", "::1"].includes(window.location.hostname);
+      }
+
+      function stopCopyLinkPolling() {
+        if (copyLinkPollTimer) {
+          window.clearInterval(copyLinkPollTimer);
+          copyLinkPollTimer = null;
+        }
+      }
+
+      function ensureCopyLinkPolling() {
+        if (copyLinkPollTimer) {
+          return;
+        }
+
+        copyLinkPollTimer = window.setInterval(() => {
+          refreshCopyLinkButton().catch(() => {});
+        }, 1000);
+      }
+
+      async function getPreferredShareInfo() {
         try {
           const data = await request("/api/share-url");
-          return data.shareUrl || window.location.href;
+          return {
+            shareUrl: data.shareUrl || null,
+            shareStatus: data.shareStatus || null,
+          };
         } catch (error) {
-          return window.location.href;
+          return {
+            shareUrl: null,
+            shareStatus: null,
+          };
         }
+      }
+
+      async function refreshCopyLinkButton() {
+        const { shareUrl, shareStatus } = await getPreferredShareInfo();
+        const localPage = isLocalPage();
+
+        if (shareUrl) {
+          copyLinkButtonEl.dataset.copyUrl = shareUrl;
+          copyLinkButtonEl.dataset.copyStatus = "ready";
+          copyLinkButtonEl.title = shareUrl;
+          copyLinkLabelEl.textContent = "Copy link";
+          copyLinkContextEl.textContent = "Share this public URL:";
+          copyLinkValueEl.textContent = shareUrl;
+          shareHelperTextEl.textContent = localPage
+            ? "Your local browser may display a different address. That is expected."
+            : "This is the shareable URL for the board.";
+          stopCopyLinkPolling();
+          return;
+        }
+
+        if (shareStatus === "pending" && localPage) {
+          copyLinkButtonEl.dataset.copyUrl = "";
+          copyLinkButtonEl.dataset.copyStatus = "pending";
+          copyLinkButtonEl.title = "Loading public URL…";
+          copyLinkLabelEl.textContent = "Loading";
+          copyLinkContextEl.textContent = "Preparing public URL:";
+          copyLinkValueEl.textContent = "Loading public URL…";
+          shareHelperTextEl.textContent = "Your local browser may display a different address. That is expected.";
+          ensureCopyLinkPolling();
+          return;
+        }
+
+        const fallbackUrl = window.location.href;
+        copyLinkButtonEl.dataset.copyUrl = fallbackUrl;
+        copyLinkButtonEl.dataset.copyStatus = shareStatus || "fallback";
+        copyLinkButtonEl.title = fallbackUrl;
+        copyLinkLabelEl.textContent = "Copy link";
+        copyLinkContextEl.textContent = localPage ? "Copy this local URL:" : "Share this URL:";
+        copyLinkValueEl.textContent = fallbackUrl;
+        shareHelperTextEl.textContent = localPage
+          ? "This run is local-only right now, so this address only works on this machine."
+          : "This is the shareable URL for the board.";
+        stopCopyLinkPolling();
       }
 
       async function request(pathname, options = {}) {
@@ -1262,13 +1385,18 @@
       exportButtonEl.addEventListener("click", downloadMarkdown);
 
       copyLinkButtonEl.addEventListener("click", async () => {
-        const preferredUrl = await getPreferredShareUrl();
+        await refreshCopyLinkButton().catch(() => {});
+        const preferredUrl = copyLinkButtonEl.dataset.copyUrl || window.location.href;
+        if (copyLinkButtonEl.dataset.copyStatus === "pending") {
+          return;
+        }
 
         try {
           await navigator.clipboard.writeText(preferredUrl);
-          copyLinkButtonEl.textContent = "Copied";
-          setTimeout(() => {
-            copyLinkButtonEl.textContent = "Copy Link";
+          copyLinkLabelEl.textContent = "Copied";
+          clearTimeout(copyLinkResetTimer);
+          copyLinkResetTimer = window.setTimeout(() => {
+            copyLinkLabelEl.textContent = "Copy link";
           }, 1200);
         } catch (error) {
           window.prompt("Copy this link", preferredUrl);
@@ -1370,6 +1498,17 @@
 
       syncGiphyBrowserVisibility();
       window.setInterval(renderTimer, 250);
+      refreshCopyLinkButton().catch(() => {
+        copyLinkButtonEl.dataset.copyUrl = window.location.href;
+        copyLinkButtonEl.dataset.copyStatus = "fallback";
+        copyLinkButtonEl.title = window.location.href;
+        copyLinkLabelEl.textContent = "Copy link";
+        copyLinkContextEl.textContent = isLocalPage() ? "Copy this local URL:" : "Share this URL:";
+        copyLinkValueEl.textContent = window.location.href;
+        shareHelperTextEl.textContent = isLocalPage()
+          ? "This run is local-only right now, so this address only works on this machine."
+          : "This is the shareable URL for the board.";
+      });
       loadState()
         .then(() => {
           connectEvents();

@@ -11,6 +11,7 @@ const PUBLIC_DIR = path.join(ROOT_DIR, "public");
 const DATA_DIR = process.env.RETRO_DATA_DIR || path.join(ROOT_DIR, "data");
 const DATA_FILE = path.join(DATA_DIR, "board.json");
 const SHARE_URL_FILE = path.join(DATA_DIR, "share-url.txt");
+const SHARE_STATUS_FILE = path.join(DATA_DIR, "share-status.txt");
 const DEFAULT_TIMER_MINUTES = 15;
 
 function createDefaultTimer() {
@@ -93,6 +94,15 @@ function loadStateSync() {
 function loadShareUrlSync() {
   try {
     const value = fs.readFileSync(SHARE_URL_FILE, "utf8").trim();
+    return value || null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function loadShareStatusSync() {
+  try {
+    const value = fs.readFileSync(SHARE_STATUS_FILE, "utf8").trim();
     return value || null;
   } catch (error) {
     return null;
@@ -357,7 +367,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === "GET" && pathname === "/api/share-url") {
-    sendJson(res, 200, { shareUrl: loadShareUrlSync() });
+    sendJson(res, 200, { shareUrl: loadShareUrlSync(), shareStatus: loadShareStatusSync() });
     return;
   }
 

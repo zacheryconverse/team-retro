@@ -1,6 +1,6 @@
 {
   "name": "team-retro",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tiny no-login retro board for short team sessions.",
   "license": "MIT",
   "bin": {

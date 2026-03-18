@@ -281,6 +281,10 @@ async function writeShareUrl(filePath, value) {
   await fsp.writeFile(filePath, value, "utf8");
 }
 
+async function writeShareStatus(filePath, value) {
+  await fsp.writeFile(filePath, value, "utf8");
+}
+
 async function stopChild(child) {
   if (!child || child.exitCode !== null || child.killed) {
     return;
@@ -401,6 +405,7 @@ async function main() {
   const serverLogPath = path.join(runtimeDir, "server.log");
   const tunnelLogPath = path.join(runtimeDir, "tunnel.log");
   const shareUrlPath = path.join(runtimeDir, "share-url.txt");
+  const shareStatusPath = path.join(runtimeDir, "share-status.txt");
   const localUrl = `http://127.0.0.1:${port}`;
 
   let keepRuntimeDir = false;
@@ -453,6 +458,7 @@ async function main() {
     });
 
     await writeShareUrl(shareUrlPath, "");
+    await writeShareStatus(shareStatusPath, options.localOnly ? "disabled" : "pending");
     printHeader(localUrl, runtimeDir);
 
     if (!options.noOpen) {
@@ -515,17 +521,20 @@ async function main() {
 
       if (shareUrl) {
         await writeShareUrl(shareUrlPath, shareUrl);
+        await writeShareStatus(shareStatusPath, "ready");
         console.log(`Share URL: ${shareUrl}`);
         if (copyToClipboard(shareUrl)) {
           console.log("Copied share URL to clipboard.");
         }
       } else {
         await writeShareUrl(shareUrlPath, "");
+        await writeShareStatus(shareStatusPath, "failed");
         keepRuntimeDir = true;
         console.error(`Tunnel setup failed. The board is still available locally at ${localUrl}`);
         console.error(`Tunnel log: ${tunnelLogPath}`);
       }
     } else {
+      await writeShareStatus(shareStatusPath, "disabled");
       console.log("Running in local-only mode.");
     }
 

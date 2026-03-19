@@ -566,7 +566,6 @@
               <span class="timer-label">Minutes</span>
               <input class="timer-input" id="timerMinutes" name="timerMinutes" type="number" min="1" max="240" step="1" value="15" />
             </label>
-            <button class="button secondary" id="timerSetButton" type="submit">Set</button>
             <button class="button primary" id="timerToggleButton" type="button">Start</button>
             <button class="button ghost" id="timerResetButton" type="button">Reset</button>
           </form>
@@ -858,7 +857,7 @@
         timerReadoutEl.textContent = formatDuration(timer.remainingMs);
         timerToggleButtonEl.textContent = isRunning ? "Pause" : "Start";
 
-        if (document.activeElement !== timerMinutesEl) {
+        if (isRunning && document.activeElement !== timerMinutesEl) {
           timerMinutesEl.value = String(Math.max(1, Math.round(timer.durationMs / 60000)));
         }
       }
@@ -1269,86 +1268,84 @@
         syncGiphyBrowserVisibility();
       });
 
-      timerFormEl.addEventListener("submit", async (event) => {
+      timerFormEl.addEventListener("submit", (event) => {
         event.preventDefault();
-        const minutes = Math.round(Number(timerMinutesEl.value));
+      });
 
+      async function applyDurationFromInput() {
+        const minutes = Math.round(Number(timerMinutesEl.value));
         if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 240) {
           window.alert("Pick a timer length between 1 and 240 minutes.");
           timerMinutesEl.focus();
-          return;
+          throw new Error("Invalid duration");
         }
-
         const durationMs = minutes * 60 * 1000;
-
-        try {
-          await runOptimisticMutation(() => {
-            state.timer = {
-              durationMs,
-              remainingMs: durationMs,
-              endAt: null,
-            };
-          }, () =>
-            request("/api/timer", {
-              method: "POST",
-              body: JSON.stringify({ action: "set-duration", minutes }),
-            }),
-          );
-        } catch (error) {
-          window.alert(error.message);
-        }
-      });
+        await runOptimisticMutation(() => {
+          state.timer = {
+            durationMs,
+            remainingMs: durationMs,
+            endAt: null,
+          };
+        }, () =>
+          request("/api/timer", {
+            method: "POST",
+            body: JSON.stringify({ action: "set-duration", minutes }),
+          }),
+        );
+      }
 
       timerToggleButtonEl.addEventListener("click", async () => {
         const timer = getTimerSnapshot();
         const action = timer.endAt ? "pause" : "start";
 
         try {
-          await runOptimisticMutation(() => {
-            if (action === "pause") {
+          if (action === "start") {
+            await applyDurationFromInput();
+          }
+          const timerAfter = getTimerSnapshot();
+          const effectiveAction = timerAfter.endAt ? "pause" : "start";
+          if (effectiveAction === "pause") {
+            await runOptimisticMutation(() => {
               state.timer = {
-                durationMs: timer.durationMs,
-                remainingMs: timer.remainingMs,
+                durationMs: timerAfter.durationMs,
+                remainingMs: timerAfter.remainingMs,
                 endAt: null,
               };
-              return;
-            }
-
-            const remainingMs = timer.remainingMs > 0 ? timer.remainingMs : timer.durationMs;
-            state.timer = {
-              durationMs: timer.durationMs,
-              remainingMs,
-              endAt: new Date(Date.now() + remainingMs).toISOString(),
-            };
-          }, () =>
-            request("/api/timer", {
-              method: "POST",
-              body: JSON.stringify({ action }),
-            }),
-          );
+            }, () =>
+              request("/api/timer", {
+                method: "POST",
+                body: JSON.stringify({ action: "pause" }),
+              }),
+            );
+          } else {
+            const remainingMs = timerAfter.remainingMs > 0 ? timerAfter.remainingMs : timerAfter.durationMs;
+            await runOptimisticMutation(() => {
+              state.timer = {
+                durationMs: timerAfter.durationMs,
+                remainingMs,
+                endAt: new Date(Date.now() + remainingMs).toISOString(),
+              };
+            }, () =>
+              request("/api/timer", {
+                method: "POST",
+                body: JSON.stringify({ action: "start" }),
+              }),
+            );
+          }
         } catch (error) {
-          window.alert(error.message);
+          if (error.message !== "Invalid duration") {
+            window.alert(error.message);
+          }
         }
       });
 
       timerResetButtonEl.addEventListener("click", async () => {
-        const timer = getTimerSnapshot();
-
         try {
-          await runOptimisticMutation(() => {
-            state.timer = {
-              durationMs: timer.durationMs,
-              remainingMs: timer.durationMs,
-              endAt: null,
-            };
-          }, () =>
-            request("/api/timer", {
-              method: "POST",
-              body: JSON.stringify({ action: "reset" }),
-            }),
-          );
+          await applyDurationFromInput();
         } catch (error) {
-          window.alert(error.message);
+          if (error.message !== "Invalid duration") {
+            window.alert(error.message);
+          }
         }
       });
 
